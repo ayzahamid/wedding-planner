@@ -2,6 +2,7 @@ import type React from "react";
 import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
+import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
   title: "Wedding Seating App",
@@ -23,6 +24,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           {children}
+          <Toaster />
         </NextThemesProvider>
       </body>
     </html>
