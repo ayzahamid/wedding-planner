@@ -39,29 +39,8 @@ import { useToast } from "@/hooks/use-toast";
 import Confetti from "@/components/confetti";
 import HallLayout from "@/components/hall-layout";
 import GuestAvatar from "@/components/guest-avatar";
-
-interface Event {
-  bride: string;
-  groom: string;
-  wedding_date: string;
-  hall_layout_image: string;
-  tables: Table[];
-}
-
-interface Table {
-  table_no: string;
-  seat_availabe: number;
-  seat_assigned: number;
-  position_x: number;
-  position_y: number;
-}
-
-interface Guest {
-  table_no: string;
-  name: string;
-  member_count: number;
-  avatar_url?: string;
-}
+import FullScreenLayout from "./FullScreenLayout";
+import { Guest, Table, Event } from "@/app/types/events";
 
 export default function EventSeatingPage() {
   const router = useRouter();
@@ -97,6 +76,7 @@ export default function EventSeatingPage() {
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const mapContainerRef = useRef<HTMLDivElement>(null);
 
+  // Fetch event data on load
   useEffect(() => {
     const fetchEventData = async () => {
       try {
@@ -473,150 +453,11 @@ export default function EventSeatingPage() {
                   </div>
 
                   {/* Hall layout with zoom functionality */}
-                  <div
-                    ref={mapContainerRef}
-                    className={`relative w-full ${
-                      isLargeScreen ? "aspect-[2/1]" : "aspect-[16/9]"
-                    } mb-4 border-2 border-pink-200 rounded-lg overflow-hidden bg-white shadow-md`}
-                    style={{ cursor: isDragging ? "grabbing" : "grab" }}
-                    onMouseDown={handleMouseDown}
-                    onMouseMove={handleMouseMove}
-                    onMouseUp={handleMouseUp}
-                    onMouseLeave={handleMouseUp}
-                    onTouchStart={handleTouchStart}
-                    onTouchMove={handleTouchMove}
-                    onTouchEnd={handleTouchEnd}
-                  >
-                    <div
-                      className="absolute inset-0 transition-transform duration-100 ease-out"
-                      style={{
-                        transform: `scale(${zoomLevel}) translate(${panPosition.x}px, ${panPosition.y}px)`,
-                        transformOrigin: "center center",
-                      }}
-                    >
-                      {/* Use our custom hall layout instead of an image */}
-                      <HallLayout className="w-full h-full" />
-
-                      {/* Show either just the selected table or all tables */}
-                      {event.tables.map((table) => {
-                        if (
-                          showAllTables ||
-                          table.table_no === selectedGuest?.table_no
-                        ) {
-                          return (
-                            <div
-                              key={table.table_no}
-                              className={`absolute ${
-                                table.table_no === selectedGuest?.table_no
-                                  ? "animate-bounce"
-                                  : ""
-                              }`}
-                              style={{
-                                left: `${table.position_x * 93}%`,
-                                top: `${table.position_y * 87}%`,
-                                transform: "translate(-50%, -50%)",
-                              }}
-                            >
-                              <div className="flex flex-col items-center">
-                                <div
-                                  className={`flex flex-col items-center ${
-                                    table.table_no === selectedGuest?.table_no
-                                      ? "scale-50"
-                                      : "scale-100"
-                                  }`}
-                                >
-                                  <Pin
-                                    className={`h-10 w-10 drop-shadow-md ${
-                                      table.table_no === selectedGuest?.table_no
-                                        ? "text-pink-500 filter drop-shadow-lg"
-                                        : "text-purple-300"
-                                    }`}
-                                  />
-                                  <div
-                                    className={`
-                    absolute top-0 left-1/2 -translate-x-1/2 -translate-y-full
-                    px-3 py-1 rounded-full text-sm font-bold whitespace-nowrap shadow-md
-                    ${
-                      table.table_no === selectedGuest?.table_no
-                        ? "bg-gradient-to-r from-pink-500 to-purple-500 text-white"
-                        : "bg-white text-purple-600 border border-purple-200"
-                    }
-                  `}
-                                  >
-                                    Table #{table.table_no}
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        }
-                        return null;
-                      })}
-                    </div>
-
-                    {/* Zoom controls */}
-                    <div className="absolute bottom-2 right-2 flex flex-col gap-1 bg-white/80 p-1 rounded-lg shadow-md">
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-8 w-8 rounded-full bg-white border-pink-200 text-pink-600 hover:bg-pink-50"
-                            onClick={zoomIn}
-                          >
-                            <ZoomIn className="h-4 w-4" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="left">
-                          <p>Zoom in</p>
-                        </TooltipContent>
-                      </Tooltip>
-
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-8 w-8 rounded-full bg-white border-pink-200 text-pink-600 hover:bg-pink-50"
-                            onClick={zoomOut}
-                          >
-                            <ZoomOut className="h-4 w-4" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="left">
-                          <p>Zoom out</p>
-                        </TooltipContent>
-                      </Tooltip>
-
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-8 w-8 rounded-full bg-white border-pink-200 text-pink-600 hover:bg-pink-50"
-                            onClick={resetZoom}
-                          >
-                            <RotateCcw className="h-4 w-4" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="left">
-                          <p>Reset view</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-
-                    {/* Zoom level indicator */}
-                    <div className="absolute top-2 right-2 bg-white/80 px-2 py-1 rounded-md text-xs font-medium text-gray-700">
-                      {Math.round(zoomLevel * 100)}%
-                    </div>
-
-                    {/* Pan instructions */}
-                    {zoomLevel > 1 && (
-                      <div className="absolute top-2 left-2 bg-white/80 px-2 py-1 rounded-md text-xs text-gray-700">
-                        Drag to pan
-                      </div>
-                    )}
-                  </div>
+                  <FullScreenLayout
+                    event={event}
+                    selectedGuest={selectedGuest}
+                    showAllTables={showAllTables}
+                  />
 
                   <div className="flex flex-col gap-2">
                     <Button
