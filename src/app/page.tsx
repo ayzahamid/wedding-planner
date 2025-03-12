@@ -102,7 +102,7 @@ export default function EventsPage() {
 
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3].map((i) => (
+            {[1, 2].map((i) => (
               <Card key={i} className="overflow-hidden border-2 border-gray-200">
                 <div className="relative w-full h-48">
                   <Skeleton className="h-full w-full" />
@@ -116,9 +116,6 @@ export default function EventsPage() {
                   <Skeleton className="h-4 w-full" />
                   <Skeleton className="h-4 w-2/3" />
                 </CardContent>
-                <CardFooter>
-                  <Skeleton className="h-10 w-full" />
-                </CardFooter>
               </Card>
             ))}
           </div>
