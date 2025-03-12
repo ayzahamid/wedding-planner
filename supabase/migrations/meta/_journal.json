@@ -15,6 +15,13 @@
       "when": 1741807115833,
       "tag": "0001_short_xorn",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1741808583055,
+      "tag": "0002_hot_dragon_man",
+      "breakpoints": true
     }
   ]
 }
