@@ -15,7 +15,7 @@ export interface Table {
 }
 
 export interface Guest {
-  table_no: string;
+  table_id: string;
   name: string;
   member_count: number;
   avatar_url?: string;

@@ -1,3 +1,4 @@
+import { getGuestsByName } from "@/db/queries/guest";
 import { type NextRequest, NextResponse } from "next/server"
 
 // Mock data for demo purposes
@@ -138,22 +139,23 @@ const mockGuests = [
   },
 ]
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
-  const searchParams = request.nextUrl.searchParams
-  const query = searchParams.get("q")
+// app/api/guests/route.ts
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const query = searchParams.get("q");
 
   if (!query) {
-    return NextResponse.json([])
+    return NextResponse.json([]);
   }
 
-  // In a real app, you would query a database
-  // For demo purposes, we'll filter the mock data
-  // Only return exact word matches as per requirements
-  const results = mockGuests.filter((guest) => {
-    const nameParts = guest.name.toLowerCase().split(" ")
-    return nameParts.some((part) => part === query.toLowerCase())
-  })
-
-  return NextResponse.json(results)
+  try {
+    const results = await getGuestsByName(query);
+    return NextResponse.json(results);
+  } catch (error) {
+    console.error("Error fetching guests:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch guests" },
+      { status: 500 }
+    );
+  }
 }
-

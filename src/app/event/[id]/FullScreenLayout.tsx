@@ -5,6 +5,7 @@ import { ZoomIn, ZoomOut, RotateCcw, Pin, Expand } from 'lucide-react';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import HallLayout from '@/components/hall-layout';
 import { Guest, Event } from '@/app/types/events';
+import { DialogTitle } from '@radix-ui/react-dialog';
 
 interface MapComponentProps {
   event: Event | null;
@@ -97,13 +98,13 @@ const FullScreenLayout: React.FC<MapComponentProps> = ({ event, selectedGuest, s
           {event.tables.map((table) => {
             if (
               showAllTables ||
-              table.table_no === selectedGuest?.table_no
+              table.table_no === selectedGuest?.table_id
             ) {
               return (
                 <div
                   key={table.table_no}
                   className={`absolute ${
-                    table.table_no === selectedGuest?.table_no
+                    table.table_no === selectedGuest?.table_id
                       ? "animate-bounce"
                       : ""
                   }`}
@@ -116,14 +117,14 @@ const FullScreenLayout: React.FC<MapComponentProps> = ({ event, selectedGuest, s
                   <div className="flex flex-col items-center">
                     <div
                       className={`flex flex-col items-center ${
-                        table.table_no === selectedGuest?.table_no
+                        table.table_no === selectedGuest?.table_id
                           ? "scale-50"
                           : "scale-100"
                       }`}
                     >
                       <Pin
                         className={`h-10 w-10 drop-shadow-md ${
-                          table.table_no === selectedGuest?.table_no
+                          table.table_no === selectedGuest?.table_id
                             ? "text-pink-500 filter drop-shadow-lg"
                             : "text-purple-300"
                         }`}
@@ -133,7 +134,7 @@ const FullScreenLayout: React.FC<MapComponentProps> = ({ event, selectedGuest, s
                           absolute top-0 left-1/2 -translate-x-1/2 -translate-y-full
                           px-3 py-1 rounded-full text-sm font-bold whitespace-nowrap shadow-md
                           ${
-                            table.table_no === selectedGuest?.table_no
+                            table.table_no === selectedGuest?.table_id
                               ? "bg-gradient-to-r from-pink-500 to-purple-500 text-white"
                               : "bg-white text-purple-600 border border-purple-200"
                           }
@@ -219,6 +220,7 @@ const FullScreenLayout: React.FC<MapComponentProps> = ({ event, selectedGuest, s
               </TooltipContent>
             </Tooltip>
             <DialogContent className="max-w-4xl">
+              <DialogTitle>Hall Seating Layout</DialogTitle>
               <div
                 className="relative w-full aspect-[2/1] overflow-hidden"
                 style={{ cursor: isDragging ? "grabbing" : "grab" }}
@@ -243,13 +245,13 @@ const FullScreenLayout: React.FC<MapComponentProps> = ({ event, selectedGuest, s
                   {event.tables.map((table) => {
                     if (
                       showAllTables ||
-                      table.table_no === selectedGuest?.table_no
+                      table.table_no === selectedGuest?.table_id
                     ) {
                       return (
                         <div
                           key={table.table_no}
                           className={`absolute ${
-                            table.table_no === selectedGuest?.table_no
+                            table.table_no === selectedGuest?.table_id
                               ? "animate-bounce"
                               : ""
                           }`}
@@ -262,14 +264,14 @@ const FullScreenLayout: React.FC<MapComponentProps> = ({ event, selectedGuest, s
                           <div className="flex flex-col items-center">
                             <div
                               className={`flex flex-col items-center ${
-                                table.table_no === selectedGuest?.table_no
+                                table.table_no === selectedGuest?.table_id
                                   ? "scale-50"
                                   : "scale-100"
                               }`}
                             >
                               <Pin
                                 className={`h-10 w-10 drop-shadow-md ${
-                                  table.table_no === selectedGuest?.table_no
+                                  table.table_no === selectedGuest?.table_id
                                     ? "text-pink-500 filter drop-shadow-lg"
                                     : "text-purple-300"
                                 }`}
@@ -279,7 +281,7 @@ const FullScreenLayout: React.FC<MapComponentProps> = ({ event, selectedGuest, s
                                   absolute top-0 left-1/2 -translate-x-1/2 -translate-y-full
                                   px-3 py-1 rounded-full text-sm font-bold whitespace-nowrap shadow-md
                                   ${
-                                    table.table_no === selectedGuest?.table_no
+                                    table.table_no === selectedGuest?.table_id
                                       ? "bg-gradient-to-r from-pink-500 to-purple-500 text-white"
                                       : "bg-white text-purple-600 border border-purple-200"
                                   }

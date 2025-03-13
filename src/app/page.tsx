@@ -58,7 +58,6 @@ export default function EventsPage() {
           type: "wedding",
           title: "Sarah & Michael's Wedding"
         };
-        console.log("New Data", newData)
         setEvents([newData]);
       } catch (error) {
         console.error("Error fetching events:", error);
@@ -173,7 +172,6 @@ export default function EventsPage() {
                       priority={index < 2}
                       quality={85}
                       onError={(e) => {
-                        // Fallback to placeholder if image fails to load
                         e.currentTarget.src =
                           "/placeholder.svg?height=400&width=600";
                       }}

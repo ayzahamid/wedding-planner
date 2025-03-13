@@ -29,7 +29,7 @@
 //   // },
 // ]
 
-import { getAllEvents } from "@/db/query";
+import { getAllEvents } from "@/db/queries/event";
 import { NextResponse } from "next/server";
 
 export async function GET() {

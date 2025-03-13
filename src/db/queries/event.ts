@@ -1,7 +1,7 @@
 
 import { eq } from "drizzle-orm";
-import { db } from ".";
-import { events } from "./schema";
+import { db } from "..";
+import { events } from "../schema";
 
 export async function getAllEvents() {
   const eventList = await db.select().from(events);

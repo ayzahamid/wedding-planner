@@ -25,7 +25,6 @@ export default function GuestAvatar({ name, imageUrl, size = "md", className = "
       "from-red-400 to-pink-400",
     ]
 
-    // Simple hash function to get a consistent index
     let hash = 0
     for (let i = 0; i < name.length; i++) {
       hash = name.charCodeAt(i) + ((hash << 5) - hash)
@@ -35,12 +34,9 @@ export default function GuestAvatar({ name, imageUrl, size = "md", className = "
     return colors[index]
   }
 
-  // Get initials from name
   const getInitials = (name: string) => {
-    // Split the name by spaces
     const parts = name.split(" ")
 
-    // Filter out parts that don't start with a letter and get the first character of each remaining part
     const initials = parts
       .filter((part) => /^[a-zA-Z]/.test(part)) // Only keep parts that start with a letter
       .map((part) => part[0])
@@ -72,4 +68,3 @@ export default function GuestAvatar({ name, imageUrl, size = "md", className = "
     </Avatar>
   )
 }
-

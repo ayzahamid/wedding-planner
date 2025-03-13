@@ -22,6 +22,13 @@
       "when": 1741808583055,
       "tag": "0002_hot_dragon_man",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1741860250558,
+      "tag": "0003_smooth_doctor_doom",
+      "breakpoints": true
     }
   ]
 }

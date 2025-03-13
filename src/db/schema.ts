@@ -1,5 +1,4 @@
-import { float } from 'drizzle-orm/mysql-core';
-import { date, integer, pgTable, serial, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { date, integer, pgTable, serial, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
 
 
 export const postsTable = pgTable('posts_table', {
@@ -36,19 +35,21 @@ export const events = pgTable("events", {
 // });
 
 // // Families Table
-// export const families = pgTable("families", {
-//     id: uuid("id").defaultRandom().primaryKey(),
-//     table_id: uuid("table_id").references(() => tables.id, { onDelete: "cascade" }),
-//     name: text("name").notNull(),
-//     member_count: integer("member_count").notNull(),
-//     phone_number: text("phone_number").notNull(),
-//     checked_at: date("checked_at"),
-//     created_at: timestamp("created_at").defaultNow(),
-//     updated_at: timestamp("updated_at").defaultNow(),
-// });
+export const guests = pgTable("guests", {
+  id: serial("id").primaryKey(),
+  table_id: integer("table_id").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  member_count: integer("member_count").notNull(),
+  phone_number: varchar("phone_number", { length: 15 }).notNull(),
+  checked_at: timestamp("checked_at"),
+});
+
 
 export type InsertPost = typeof postsTable.$inferInsert;
 export type SelectPost = typeof postsTable.$inferSelect;
 
 export type InsertEvent = typeof events.$inferInsert;
 export type SelectEvent = typeof events.$inferSelect;
+
+// export type InsertGuest = typeof guests.$inferInsert;
+// export type SelectGuest = typeof guests.$inferSelect;

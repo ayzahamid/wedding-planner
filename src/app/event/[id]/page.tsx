@@ -56,7 +56,7 @@ export default function EventSeatingPage() {
     name: "",
     member_count: 1,
     phone_number: "",
-    table_no: "",
+    table_id: "",
   });
   const [availableTables, setAvailableTables] = useState<Table[]>([]);
   const [activeTab, setActiveTab] = useState("search");
@@ -133,6 +133,8 @@ export default function EventSeatingPage() {
       );
       if (!response.ok) throw new Error("Search failed");
       const data = await response.json();
+      data[0].imageUrl=`https://source.boringavatars.com/beam/120/${encodeURIComponent("Smith Family")}?colors=F9A8D4,F472B6,EC4899,DB2777,BE185D`
+      console.log("Data", data)
       setSearchResults(data);
       setSelectedGuest(null);
 
@@ -156,6 +158,8 @@ export default function EventSeatingPage() {
   };
 
   const selectGuest = (guest: Guest) => {
+
+    console.log("Guest", guest)
     setSelectedGuest(guest);
     setSearchResults([]);
     setShowConfetti(true);
@@ -176,7 +180,7 @@ export default function EventSeatingPage() {
 
     toast({
       title: "Table found!",
-      description: `You're seated at Table #${guest.table_no}`,
+      description: `You're seated at Table #${guest.table_id}`,
       variant: "default",
     });
 
@@ -190,7 +194,7 @@ export default function EventSeatingPage() {
     if (
       !registrationData.name ||
       !registrationData.phone_number ||
-      !registrationData.table_no
+      !registrationData.table_id
     )
       return;
 
@@ -216,7 +220,7 @@ export default function EventSeatingPage() {
       setRegistrationComplete(true);
 
       setSelectedGuest({
-        table_no: registrationData.table_no,
+        table_id: registrationData.table_id,
         name: registrationData.name,
         member_count: registrationData.member_count,
       });
@@ -236,7 +240,7 @@ export default function EventSeatingPage() {
 
       toast({
         title: "Registration successful!",
-        description: `You've been assigned to Table #${registrationData.table_no}`,
+        description: `You've been assigned to Table #${registrationData.table_id}`,
         variant: "default",
       });
 
@@ -429,7 +433,7 @@ export default function EventSeatingPage() {
                           variant="outline"
                           className="text-lg font-bold bg-gradient-to-r from-pink-500 to-purple-500 text-white border-0 px-3 py-1"
                         >
-                          #{selectedGuest.table_no}
+                          #{selectedGuest.table_id}
                         </Badge>
                       </p>
                       <Tooltip>
@@ -559,7 +563,7 @@ export default function EventSeatingPage() {
                                         variant="outline"
                                         className="text-pink-600 border-pink-200"
                                       >
-                                        Table #{guest.table_no}
+                                        Table #{guest.table_id}
                                       </Badge>
                                     </div>
                                   </div>
@@ -610,7 +614,7 @@ export default function EventSeatingPage() {
                                 variant="outline"
                                 className="text-lg font-bold bg-gradient-to-r from-pink-500 to-purple-500 text-white border-0 px-3 py-1"
                               >
-                                #{registrationData.table_no}
+                                #{registrationData.table_id}
                               </Badge>
                             </p>
                           </div>
@@ -689,13 +693,13 @@ export default function EventSeatingPage() {
                                       <Button
                                         type="button"
                                         variant={
-                                          registrationData.table_no ===
+                                          registrationData.table_id ===
                                           table.table_no
                                             ? "default"
                                             : "outline"
                                         }
                                         className={`h-auto py-2 flex flex-col ${
-                                          registrationData.table_no ===
+                                          registrationData.table_id ===
                                           table.table_no
                                             ? "bg-gradient-to-r from-pink-500 to-purple-500 text-white hover:from-pink-600 hover:to-purple-600"
                                             : "border-pink-200 text-gray-700 hover:bg-pink-50"
@@ -703,14 +707,14 @@ export default function EventSeatingPage() {
                                         onClick={() =>
                                           setRegistrationData({
                                             ...registrationData,
-                                            table_no: table.table_no,
+                                            table_id: table.table_no,
                                           })
                                         }
                                       >
                                         <span>Table #{table.table_no}</span>
                                         <span
                                           className={`text-xs ${
-                                            registrationData.table_no ===
+                                            registrationData.table_id ===
                                             table.table_no
                                               ? "text-pink-100"
                                               : "text-pink-500"
@@ -737,7 +741,7 @@ export default function EventSeatingPage() {
                               type="submit"
                               className="w-full bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600"
                               disabled={
-                                isRegistering || !registrationData.table_no
+                                isRegistering || !registrationData.table_id
                               }
                             >
                               {isRegistering ? (
