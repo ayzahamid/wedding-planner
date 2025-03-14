@@ -1,8 +1,23 @@
 import { db } from "..";
 import { guests } from "../schema";
-import { ilike, eq } from "drizzle-orm";
+import { eq, ilike } from "drizzle-orm";
 
-export async function getGuestsByName(name: string) {
+// Add a guest
+export async function addGuest(guest: {
+  table_id: number;
+  name: string;
+  member_count: number;
+  phone_number: string;
+}) {
+  return db.insert(guests).values(guest).returning();
+}
+
+// Search guests by complete first or last name
+export async function searchGuestsByName(name: string) {
+  const nameParts = name.split(" ");
+  const firstName = nameParts[0];
+  const lastName = nameParts[nameParts.length - 1];
+
   try {
     return await db
       .select()
@@ -12,18 +27,4 @@ export async function getGuestsByName(name: string) {
     console.error("Error fetching guests by name:", error);
     throw new Error("Failed to fetch guests");
   }
-}
-
-export async function getGuestsByTableId(tableId: number) {
-  return db
-    .select()
-    .from(guests)
-    .where(eq(guests.table_id, tableId));
-}
-
-export async function checkInGuest(guestId: number) {
-  return db
-    .update(guests)
-    .set({ checked_at: new Date() })
-    .where(eq(guests.id, guestId));
 }

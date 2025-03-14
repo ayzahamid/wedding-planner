@@ -78,21 +78,26 @@ export default function EventSeatingPage() {
 
   // Fetch event data on load
   useEffect(() => {
+    console.log("Event Id", eventId)
     const fetchEventData = async () => {
       try {
         const response = await fetch(`/api/event/${eventId}`);
         if (!response.ok) throw new Error("Failed to fetch event data");
         const data = await response.json();
-        setEvent(data);
+        console.log("Event Data", data[0].event)
+        setEvent(data[0].event);
+        const tableArray  = [data[0].table]
+        console.log("tableArray", tableArray)
+        console.log("Available Table", tableArray.filter(
+          (table) => table.seat_available > 0
+        ))
         setAvailableTables(
-          data.tables.filter(
-            (table: { seat_availabe: number }) => table.seat_availabe > 0
-          )
+          tableArray.filter((table) => table.seat_available > 0)
         );
 
         toast({
           title: "Welcome to the Event Seating App",
-          description: `${data.bride} & ${data.groom}'s special day`,
+          description: `${data[0].event.bride} & ${data[0].event.groom}'s special day`,
           variant: "default",
         });
       } catch (error) {
@@ -133,6 +138,7 @@ export default function EventSeatingPage() {
       );
       if (!response.ok) throw new Error("Search failed");
       const data = await response.json();
+      console.log("Search Data", data)
       data[0].imageUrl=`https://source.boringavatars.com/beam/120/${encodeURIComponent("Smith Family")}?colors=F9A8D4,F472B6,EC4899,DB2777,BE185D`
       console.log("Data", data)
       setSearchResults(data);

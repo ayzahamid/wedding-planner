@@ -1,4 +1,4 @@
-import { getGuestsByName } from "@/db/queries/guest";
+import { searchGuestsByName } from "@/db/queries/guest";
 import { type NextRequest, NextResponse } from "next/server"
 
 // Mock data for demo purposes
@@ -140,6 +140,7 @@ const mockGuests = [
 ]
 
 // app/api/guests/route.ts
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const query = searchParams.get("q");
@@ -149,13 +150,10 @@ export async function GET(request: Request) {
   }
 
   try {
-    const results = await getGuestsByName(query);
+    const results = await searchGuestsByName(query);
     return NextResponse.json(results);
   } catch (error) {
-    console.error("Error fetching guests:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch guests" },
-      { status: 500 }
-    );
+    console.error("Error searching guests:", error);
+    return NextResponse.json({ error: "Failed to search guests" }, { status: 500 });
   }
 }

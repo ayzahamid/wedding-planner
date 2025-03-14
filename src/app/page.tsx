@@ -58,6 +58,7 @@ export default function EventsPage() {
           type: "wedding",
           title: "Sarah & Michael's Wedding"
         };
+        console.log("NEw Data", newData)
         setEvents([newData]);
       } catch (error) {
         console.error("Error fetching events:", error);

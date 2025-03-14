@@ -1,3 +1,5 @@
+import { addGuest } from "@/db/queries/guest";
+import { getTableById, updateTableSeats } from "@/db/queries/table";
 import { type NextRequest, NextResponse } from "next/server"
 
 // Mock data for demo purposes - this would be a database in a real app
@@ -14,47 +16,40 @@ const mockFamilies = [
   // Existing families would be here
 ]
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: Request) {
   try {
-    const body = await request.json()
-    const { table_no, name, phone_number, member_count } = body
+    const body = await request.json();
+    console.log("Body", body)
+    const { table_id, name, member_count, phone_number } = body;
 
     // Validate required fields
-    if (!table_no || !name || !phone_number || !member_count) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
+    if (!table_id || !name || !member_count || !phone_number) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    // Find the table
-    const tableIndex = mockTables.findIndex((t) => t.table_no === table_no)
-    if (tableIndex === -1) {
-      return NextResponse.json({ error: "Table not found" }, { status: 404 })
+    // Get the table
+    const table = await getTableById(table_id);
+    if (!table) {
+      return NextResponse.json({ error: "Table not found" }, { status: 404 });
     }
 
-    // Update table capacity
-    // Note: As per requirements, we allow registration even if member_count > seat_availabe
-    const table = mockTables[tableIndex]
-    const updatedTable = {
-      ...table,
-      seat_availabe: Math.max(0, table.seat_availabe - member_count),
-      seat_assigned: table.seat_assigned + member_count,
-    }
+    // Update table seats
+    const updatedSeatsAvailable = Math.max(0, table.seat_available - member_count);
+    const updatedSeatsAssigned = table.seat_assigned + member_count;
 
-    mockTables[tableIndex] = updatedTable
+    await updateTableSeats(table.id, updatedSeatsAvailable, updatedSeatsAssigned);
 
-    // Add family to the guest list
-    mockFamilies.push({
-      table_id: table_no,
+    // Add guest
+    const newGuest = await addGuest({
+      table_id: table.id,
       name,
       member_count,
       phone_number,
-      checked_at: new Date().toISOString(),
-    })
+    });
 
-    // Return updated tables
-    return NextResponse.json(mockTables)
+    return NextResponse.json(newGuest);
   } catch (error) {
-    console.error("Error processing registration:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    console.error("Error registering guest:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
-
