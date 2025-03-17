@@ -42,6 +42,14 @@ import GuestAvatar from "@/components/guest-avatar";
 import FullScreenLayout from "./FullScreenLayout";
 import { Guest, Table, Event } from "@/app/types/types";
 import SearchComponent from "./searchGuests";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function EventSeatingPage() {
   const router = useRouter();
@@ -80,6 +88,7 @@ export default function EventSeatingPage() {
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const mapContainerRef = useRef<HTMLDivElement>(null);
 
+  const [showSeatWarning, setShowSeatWarning] = useState(false);
   const [errors, setErrors] = useState({
     name: "",
     phone_number: "",
@@ -96,12 +105,15 @@ export default function EventSeatingPage() {
       table_id: "",
     };
 
-    if (!registrationData.name || registrationData.name.length < 3) {
+    if (registrationData.name.length == 0 || registrationData.name.length < 3) {
       newErrors.name = "Name must be at least 3 characters long.";
       valid = false;
     }
 
-    if (!/^\d{10}$/.test(registrationData.phone_number)) {
+    if (
+      registrationData.phone_number.length < 10 ||
+      registrationData.phone_number.length === 0
+    ) {
       newErrors.phone_number = "Enter a valid 10-digit phone number.";
       valid = false;
     }
@@ -118,6 +130,25 @@ export default function EventSeatingPage() {
 
     setErrors(newErrors);
     return valid;
+  };
+
+  const handleTableSelect = (table: Table) => {
+    if (registrationData.member_count > table.seat_available) {
+      setSelectedTable(table);
+      setShowSeatWarning(true);
+    } else {
+      setRegistrationData({ ...registrationData, table_id: table.table_no });
+    }
+  };
+
+  const confirmTableSelection = () => {
+    if (selectedTable) {
+      setRegistrationData({
+        ...registrationData,
+        table_id: selectedTable.table_no,
+      });
+      setShowSeatWarning(false);
+    }
   };
 
   // Fetch event data on load
@@ -489,7 +520,6 @@ export default function EventSeatingPage() {
                                     name: e.target.value,
                                   })
                                 }
-                                required
                                 className="border-pink-200 focus-visible:ring-pink-400"
                               />
                               {errors.name && (
@@ -513,7 +543,6 @@ export default function EventSeatingPage() {
                                     phone_number: e.target.value,
                                   })
                                 }
-                                required
                                 className="border-pink-200 focus-visible:ring-pink-400"
                               />
                               {errors.phone_number && (
@@ -551,6 +580,45 @@ export default function EventSeatingPage() {
                               )}
                             </div>
 
+                            <Dialog
+                              open={showSeatWarning}
+                              onOpenChange={setShowSeatWarning}
+                            >
+                              <DialogContent className="max-w-md">
+                                <DialogHeader>
+                                  <DialogTitle className="text-red-600">
+                                    Seat Limit Warning
+                                  </DialogTitle>
+                                  <DialogDescription className="text-gray-700">
+                                    The selected table has only{" "}
+                                    <strong>
+                                      {selectedTable?.seat_available}
+                                    </strong>{" "}
+                                    seats available, but you have{" "}
+                                    <strong>
+                                      {registrationData.member_count}
+                                    </strong>{" "}
+                                    family members. Do you want to continue
+                                    anyway?
+                                  </DialogDescription>
+                                </DialogHeader>
+                                <DialogFooter>
+                                  <Button
+                                    variant="outline"
+                                    onClick={() => setShowSeatWarning(false)}
+                                  >
+                                    Cancel
+                                  </Button>
+                                  <Button
+                                    variant="destructive"
+                                    onClick={confirmTableSelection}
+                                  >
+                                    Confirm
+                                  </Button>
+                                </DialogFooter>
+                              </DialogContent>
+                            </Dialog>
+
                             <div className="space-y-2">
                               <Label className="text-gray-700">
                                 Select a Table
@@ -573,12 +641,7 @@ export default function EventSeatingPage() {
                                             ? "bg-gradient-to-r from-pink-500 to-purple-500 text-white hover:from-pink-600 hover:to-purple-600"
                                             : "border-pink-200 text-gray-700 hover:bg-pink-50"
                                         }`}
-                                        onClick={() =>
-                                          setRegistrationData({
-                                            ...registrationData,
-                                            table_id: table.table_no,
-                                          })
-                                        }
+                                        onClick={() => handleTableSelect(table)}
                                       >
                                         <span>Table #{table.table_no}</span>
                                         <span
@@ -606,11 +669,6 @@ export default function EventSeatingPage() {
                                   </Tooltip>
                                 ))}
                               </div>
-                              {errors.table_id && (
-                                <p className="text-red-500 text-xs">
-                                  {errors.table_id}
-                                </p>
-                              )}
                             </div>
 
                             <Button
