@@ -60,3 +60,7 @@ TailwindCSS: Responsive UI design.
 Docker: Containerized deployment.
 
 Lucide Icons: UI enhancements with icons.
+
+## Vercel Deploymeny
+
+This app is deployed to vercel, please access it [here](https://wedding-planner-one.vercel.app/)
