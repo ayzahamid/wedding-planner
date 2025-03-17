@@ -40,7 +40,8 @@ import Confetti from "@/components/confetti";
 import HallLayout from "@/components/hall-layout";
 import GuestAvatar from "@/components/guest-avatar";
 import FullScreenLayout from "./FullScreenLayout";
-import { Guest, Table, Event } from "@/app/types/events";
+import { Guest, Table, Event } from "@/app/types/types";
+import SearchComponent from "./searchGuests";
 
 export default function EventSeatingPage() {
   const router = useRouter();
@@ -52,11 +53,13 @@ export default function EventSeatingPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<Guest[]>([]);
   const [selectedGuest, setSelectedGuest] = useState<Guest | null>(null);
+  const [selectedTable, setSelectedTable] = useState<Table | null>(null);
   const [registrationData, setRegistrationData] = useState({
     name: "",
     member_count: 1,
     phone_number: "",
     table_id: "",
+    table_no: "",
   });
   const [availableTables, setAvailableTables] = useState<Table[]>([]);
   const [activeTab, setActiveTab] = useState("search");
@@ -68,6 +71,7 @@ export default function EventSeatingPage() {
   const [showConfetti, setShowConfetti] = useState(false);
   const [isLargeScreen, setIsLargeScreen] = useState(false);
   const [welcomeMessage, setWelcomeMessage] = useState("");
+  const [allTables, setAllTables] = useState<Table[]>([]);
 
   // Zoom
   const [zoomLevel, setZoomLevel] = useState(1);
@@ -78,30 +82,43 @@ export default function EventSeatingPage() {
 
   // Fetch event data on load
   useEffect(() => {
-    console.log("Event Id", eventId)
     const fetchEventData = async () => {
       try {
         const response = await fetch(`/api/event/${eventId}`);
-        if (!response.ok) throw new Error("Failed to fetch event data");
-        const data = await response.json();
-        console.log("Event Data", data[0].event)
-        setEvent(data[0].event);
-        const tableArray  = [data[0].table]
-        console.log("tableArray", tableArray)
-        console.log("Available Table", tableArray.filter(
-          (table) => table.seat_available > 0
-        ))
-        setAvailableTables(
-          tableArray.filter((table) => table.seat_available > 0)
-        );
+        if (!response.ok) {
+          throw new Error("Failed to fetch event data");
+        }
 
-        toast({
-          title: "Welcome to the Event Seating App",
-          description: `${data[0].event.bride} & ${data[0].event.groom}'s special day`,
-          variant: "default",
-        });
+        const data = await response.json();
+
+        // Extract event and table data from the response
+        const eventData = data[0].event[0] || null;
+        const tableData = data[0].tables;
+
+        // Update event state
+        setEvent(eventData);
+
+        // Update tables state
+        setAllTables(tableData);
+
+        // Filter available tables
+        const available = tableData.filter(
+          (table: { seat_available: number }) => table.seat_available > 0
+        );
+        setAvailableTables(available);
+
+        // Show success toast
+        if (eventData) {
+          toast({
+            title: "Welcome to the Event Seating App",
+            description: `${eventData.bride} & ${eventData.groom}'s special day`,
+            variant: "default",
+          });
+        }
       } catch (error) {
         console.error("Error fetching event data:", error);
+
+        // Show error toast
         toast({
           title: "Error loading event data",
           description: "Please try again later",
@@ -113,7 +130,7 @@ export default function EventSeatingPage() {
     };
 
     fetchEventData();
-  }, [eventId]);
+  }, [eventId]); // Add `eventId` as a dependency
 
   useEffect(() => {
     const checkScreenSize = () => {
@@ -127,45 +144,12 @@ export default function EventSeatingPage() {
     return () => window.removeEventListener("resize", checkScreenSize);
   }, []);
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!searchQuery.trim()) return;
-
-    setIsSearching(true);
-    try {
-      const response = await fetch(
-        `/api/event/${eventId}/guests?q=${encodeURIComponent(searchQuery)}`
-      );
-      if (!response.ok) throw new Error("Search failed");
-      const data = await response.json();
-      console.log("Search Data", data)
-      data[0].imageUrl=`https://source.boringavatars.com/beam/120/${encodeURIComponent("Smith Family")}?colors=F9A8D4,F472B6,EC4899,DB2777,BE185D`
-      console.log("Data", data)
-      setSearchResults(data);
-      setSelectedGuest(null);
-
-      if (data.length === 0) {
-        toast({
-          title: "No guests found",
-          description: "Try another name or register as a new guest",
-          variant: "default",
-        });
-      }
-    } catch (error) {
-      console.error("Search error:", error);
-      toast({
-        title: "Search failed",
-        description: "Please try again",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSearching(false);
-    }
-  };
-
   const selectGuest = (guest: Guest) => {
+    const selectedTable = allTables.filter(
+      (table) => table.id == Number(guest.table_id)
+    );
+    setSelectedTable(selectedTable[0]);
 
-    console.log("Guest", guest)
     setSelectedGuest(guest);
     setSearchResults([]);
     setShowConfetti(true);
@@ -186,7 +170,7 @@ export default function EventSeatingPage() {
 
     toast({
       title: "Table found!",
-      description: `You're seated at Table #${guest.table_id}`,
+      description: `You're seated at Table #${selectedTable[0]?.table_no}`,
       variant: "default",
     });
 
@@ -229,6 +213,7 @@ export default function EventSeatingPage() {
         table_id: registrationData.table_id,
         name: registrationData.name,
         member_count: registrationData.member_count,
+        table_no: registrationData.table_no,
       });
 
       setShowConfetti(true);
@@ -267,8 +252,6 @@ export default function EventSeatingPage() {
 
   const switchToRegister = () => {
     setActiveTab("register");
-    setSearchQuery("");
-    setSearchResults([]);
   };
 
   const toggleShowAllTables = () => {
@@ -279,85 +262,6 @@ export default function EventSeatingPage() {
         : "Showing all tables",
       variant: "default",
     });
-  };
-
-  const zoomIn = () => {
-    setZoomLevel((prev) => Math.min(prev + 0.25, 3));
-    toast({
-      title: "Zoomed in",
-      variant: "default",
-    });
-  };
-
-  const zoomOut = () => {
-    setZoomLevel((prev) => Math.max(prev - 0.25, 0.5));
-    toast({
-      title: "Zoomed out",
-      variant: "default",
-    });
-  };
-
-  const resetZoom = () => {
-    setZoomLevel(1);
-    setPanPosition({ x: 0, y: 0 });
-    toast({
-      title: "Zoom reset",
-      variant: "default",
-    });
-  };
-
-  const handleMouseDown = (e: React.MouseEvent) => {
-    setIsDragging(true);
-    setDragStart({ x: e.clientX, y: e.clientY });
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging) return;
-
-    const dx = (e.clientX - dragStart.x) / zoomLevel;
-    const dy = (e.clientY - dragStart.y) / zoomLevel;
-
-    setPanPosition((prev) => ({
-      x: prev.x + dx,
-      y: prev.y + dy,
-    }));
-
-    setDragStart({ x: e.clientX, y: e.clientY });
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    if (e.touches.length === 1) {
-      setIsDragging(true);
-      setDragStart({
-        x: e.touches[0].clientX,
-        y: e.touches[0].clientY,
-      });
-    }
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDragging || e.touches.length !== 1) return;
-
-    const dx = (e.touches[0].clientX - dragStart.x) / zoomLevel;
-    const dy = (e.touches[0].clientY - dragStart.y) / zoomLevel;
-
-    setPanPosition((prev) => ({
-      x: prev.x + dx,
-      y: prev.y + dy,
-    }));
-
-    setDragStart({
-      x: e.touches[0].clientX,
-      y: e.touches[0].clientY,
-    });
-  };
-
-  const handleTouchEnd = () => {
-    setIsDragging(false);
   };
 
   const goBackToEvents = () => {
@@ -439,7 +343,7 @@ export default function EventSeatingPage() {
                           variant="outline"
                           className="text-lg font-bold bg-gradient-to-r from-pink-500 to-purple-500 text-white border-0 px-3 py-1"
                         >
-                          #{selectedGuest.table_id}
+                          #{selectedTable?.table_no}
                         </Badge>
                       </p>
                       <Tooltip>
@@ -461,12 +365,12 @@ export default function EventSeatingPage() {
                       </Tooltip>
                     </div>
                   </div>
-
                   {/* Hall layout with zoom functionality */}
                   <FullScreenLayout
-                    event={event}
+                    event={{ ...event, tables: allTables }}
                     selectedGuest={selectedGuest}
                     showAllTables={showAllTables}
+                    selectedTable={selectedTable}
                   />
 
                   <div className="flex flex-col gap-2">
@@ -520,88 +424,11 @@ export default function EventSeatingPage() {
                       value="search"
                       className="space-y-4 px-4 md:px-6"
                     >
-                      <CardContent className="space-y-4 pt-6 px-4 md:px-6">
-                        <form onSubmit={handleSearch} className="space-y-4">
-                          <div className="flex space-x-2">
-                            <Input
-                              placeholder="Enter your name"
-                              value={searchQuery}
-                              onChange={(e) => setSearchQuery(e.target.value)}
-                              className="flex-1 border-pink-200 focus-visible:ring-pink-400"
-                            />
-                            <Button
-                              type="submit"
-                              disabled={isSearching}
-                              className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600"
-                            >
-                              {isSearching ? (
-                                <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
-                              ) : (
-                                <Search className="h-4 w-4" />
-                              )}
-                            </Button>
-                          </div>
-                        </form>
-
-                        {searchResults.length > 0 && (
-                          <div className="space-y-2">
-                            <h3 className="font-medium text-purple-700">
-                              Search Results:
-                            </h3>
-                            <div className="border border-pink-200 rounded-md divide-y divide-pink-100 overflow-hidden">
-                              {searchResults.map((guest, index) => (
-                                <div
-                                  key={index}
-                                  className="p-3 hover:bg-pink-50 cursor-pointer flex justify-between items-center transition-colors"
-                                  onClick={() => selectGuest(guest)}
-                                >
-                                  <div className="flex items-center gap-3">
-                                    <GuestAvatar
-                                      name={guest.name}
-                                      imageUrl={guest.avatar_url}
-                                      size="sm"
-                                    />
-                                    <div>
-                                      <p className="font-medium text-gray-800">
-                                        {guest.name}
-                                      </p>
-                                      <Badge
-                                        variant="outline"
-                                        className="text-pink-600 border-pink-200"
-                                      >
-                                        Table #{guest.table_id}
-                                      </Badge>
-                                    </div>
-                                  </div>
-                                  <div className="flex items-center gap-1 bg-purple-100 px-2 py-1 rounded-full">
-                                    <Users className="h-4 w-4 text-purple-600" />
-                                    <span className="text-sm font-medium text-purple-600">
-                                      {guest.member_count}
-                                    </span>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {searchResults.length === 0 &&
-                          searchQuery &&
-                          !isSearching && (
-                            <div className="text-center py-6 bg-pink-50 rounded-lg border border-pink-100">
-                              <p className="mb-3 text-gray-700">
-                                No guests found with that name.
-                              </p>
-                              <Button
-                                variant="outline"
-                                onClick={switchToRegister}
-                                className="border-pink-300 text-pink-600 hover:bg-pink-50"
-                              >
-                                Register as a New Guest
-                              </Button>
-                            </div>
-                          )}
-                      </CardContent>
+                      <SearchComponent
+                        eventId={eventId}
+                        switchToRegister={switchToRegister}
+                        selectGuest={selectGuest}
+                      ></SearchComponent>
                     </TabsContent>
 
                     <TabsContent value="register" className="px-4 md:px-6">
@@ -726,8 +553,10 @@ export default function EventSeatingPage() {
                                               : "text-pink-500"
                                           }`}
                                         >
-                                          {table.seat_availabe} seat
-                                          {table.seat_availabe !== 1 ? "s" : ""}{" "}
+                                          {table.seat_available} seat
+                                          {table.seat_available !== 1
+                                            ? "s"
+                                            : ""}{" "}
                                           available
                                         </span>
                                       </Button>

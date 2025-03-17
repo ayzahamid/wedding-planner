@@ -8,7 +8,8 @@ export interface Event {
 
 export interface Table {
   table_no: string;
-  seat_availabe: number;
+  id: number;
+  seat_available: number;
   seat_assigned: number;
   position_x: number;
   position_y: number;
@@ -16,6 +17,7 @@ export interface Table {
 
 export interface Guest {
   table_id: string;
+  table_no: string;
   name: string;
   member_count: number;
   avatar_url?: string;

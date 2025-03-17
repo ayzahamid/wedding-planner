@@ -1,19 +1,29 @@
-import React, { useState, useRef } from 'react';
-import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
-import { Button } from '@/components/ui/button';
-import { ZoomIn, ZoomOut, RotateCcw, Pin, Expand } from 'lucide-react';
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
-import HallLayout from '@/components/hall-layout';
-import { Guest, Event } from '@/app/types/events';
-import { DialogTitle } from '@radix-ui/react-dialog';
+import React, { useState, useRef } from "react";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
+import { Button } from "@/components/ui/button";
+import { ZoomIn, ZoomOut, RotateCcw, Pin, Expand } from "lucide-react";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import HallLayout from "@/components/hall-layout";
+import { Guest, Event, Table } from "@/app/types/types";
+import { DialogTitle } from "@radix-ui/react-dialog";
 
 interface MapComponentProps {
   event: Event | null;
   selectedGuest: Guest | null;
   showAllTables: boolean;
+  selectedTable: Table | null;
 }
 
-const FullScreenLayout: React.FC<MapComponentProps> = ({ event, selectedGuest, showAllTables }) => {
+const FullScreenLayout: React.FC<MapComponentProps> = ({
+  event,
+  selectedGuest,
+  showAllTables,
+  selectedTable,
+}) => {
   const [zoomLevel, setZoomLevel] = useState(1);
   const [panPosition, setPanPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
@@ -28,7 +38,6 @@ const FullScreenLayout: React.FC<MapComponentProps> = ({ event, selectedGuest, s
 
   const handleMouseDown = (e: React.MouseEvent) => {
     setIsDragging(true);
-    // Implement your drag logic here
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
@@ -46,7 +55,6 @@ const FullScreenLayout: React.FC<MapComponentProps> = ({ event, selectedGuest, s
 
   const handleTouchStart = (e: React.TouchEvent) => {
     setIsDragging(true);
-    // Implement your touch drag logic here
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
@@ -63,7 +71,7 @@ const FullScreenLayout: React.FC<MapComponentProps> = ({ event, selectedGuest, s
   const isLargeScreen = window.innerWidth > 1024;
 
   if (!event) {
-    return <div>Loading...</div>; // Handle case where event data is not available
+    return <div>Loading...</div>;
   }
 
   return (
@@ -93,24 +101,20 @@ const FullScreenLayout: React.FC<MapComponentProps> = ({ event, selectedGuest, s
           {/* Use the hall layout image */}
           <HallLayout className="w-full h-full" />
 
-
           {/* Show either just the selected table or all tables */}
           {event.tables.map((table) => {
-            if (
-              showAllTables ||
-              table.table_no === selectedGuest?.table_id
-            ) {
+            if (showAllTables || table.table_no === selectedTable?.table_no) {
               return (
                 <div
                   key={table.table_no}
                   className={`absolute ${
-                    table.table_no === selectedGuest?.table_id
+                    table.table_no === selectedTable?.table_no
                       ? "animate-bounce"
                       : ""
                   }`}
                   style={{
-                    left: `${table.position_x * 100}%`,
-                    top: `${table.position_y * 100}%`,
+                    left: `${(table.position_x / 1050) * 100}%`,
+                    top: `${(table.position_y / 700) * 100}%`,
                     transform: "translate(-50%, -50%)",
                   }}
                 >
@@ -119,26 +123,26 @@ const FullScreenLayout: React.FC<MapComponentProps> = ({ event, selectedGuest, s
                       className={`flex flex-col items-center ${
                         table.table_no === selectedGuest?.table_id
                           ? "scale-50"
-                          : "scale-100"
+                          : "scale-60"
                       }`}
                     >
                       <Pin
                         className={`h-10 w-10 drop-shadow-md ${
-                          table.table_no === selectedGuest?.table_id
+                          table.table_no === selectedTable?.table_no
                             ? "text-pink-500 filter drop-shadow-lg"
                             : "text-purple-300"
                         }`}
                       />
                       <div
                         className={`
-                          absolute top-0 left-1/2 -translate-x-1/2 -translate-y-full
-                          px-3 py-1 rounded-full text-sm font-bold whitespace-nowrap shadow-md
-                          ${
-                            table.table_no === selectedGuest?.table_id
-                              ? "bg-gradient-to-r from-pink-500 to-purple-500 text-white"
-                              : "bg-white text-purple-600 border border-purple-200"
-                          }
-                        `}
+                absolute top-0 left-1/2 -translate-x-1/2 -translate-y-full
+                px-3 py-1 rounded-full text-sm font-bold whitespace-nowrap shadow-md
+                ${
+                  table.table_no === selectedTable?.table_no
+                    ? "bg-gradient-to-r from-pink-500 to-purple-500 text-white"
+                    : "bg-white text-purple-600 border border-purple-200"
+                }
+              `}
                       >
                         Table #{table.table_no}
                       </div>
@@ -245,33 +249,33 @@ const FullScreenLayout: React.FC<MapComponentProps> = ({ event, selectedGuest, s
                   {event.tables.map((table) => {
                     if (
                       showAllTables ||
-                      table.table_no === selectedGuest?.table_id
+                      table.table_no === selectedTable?.table_no
                     ) {
                       return (
                         <div
                           key={table.table_no}
                           className={`absolute ${
-                            table.table_no === selectedGuest?.table_id
+                            table.table_no === selectedTable?.table_no
                               ? "animate-bounce"
                               : ""
                           }`}
                           style={{
-                            left: `${table.position_x * 100}%`,
-                            top: `${table.position_y * 100}%`,
+                            left: `${(table.position_x / 1050) * 100}%`,
+                            top: `${(table.position_y / 650) * 100}%`,
                             transform: "translate(-50%, -50%)",
                           }}
                         >
                           <div className="flex flex-col items-center">
                             <div
                               className={`flex flex-col items-center ${
-                                table.table_no === selectedGuest?.table_id
+                                table.table_no === selectedTable?.table_no
                                   ? "scale-50"
-                                  : "scale-100"
+                                  : "scale-60"
                               }`}
                             >
                               <Pin
                                 className={`h-10 w-10 drop-shadow-md ${
-                                  table.table_no === selectedGuest?.table_id
+                                  table.table_no === selectedTable?.table_no
                                     ? "text-pink-500 filter drop-shadow-lg"
                                     : "text-purple-300"
                                 }`}
@@ -281,7 +285,7 @@ const FullScreenLayout: React.FC<MapComponentProps> = ({ event, selectedGuest, s
                                   absolute top-0 left-1/2 -translate-x-1/2 -translate-y-full
                                   px-3 py-1 rounded-full text-sm font-bold whitespace-nowrap shadow-md
                                   ${
-                                    table.table_no === selectedGuest?.table_id
+                                    table.table_no === selectedTable?.table_no
                                       ? "bg-gradient-to-r from-pink-500 to-purple-500 text-white"
                                       : "bg-white text-purple-600 border border-purple-200"
                                   }
