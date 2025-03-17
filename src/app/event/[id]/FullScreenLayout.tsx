@@ -29,6 +29,59 @@ const FullScreenLayout: React.FC<MapComponentProps> = ({
   const [isDragging, setIsDragging] = useState(false);
   const mapContainerRef = useRef<HTMLDivElement>(null);
 
+  const [startPosition, setStartPosition] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
+
+  const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
+    let clientX: number, clientY: number;
+
+    if ("touches" in e) {
+      const touch = e.touches[0];
+      clientX = touch.clientX;
+      clientY = touch.clientY;
+    } else {
+      clientX = e.clientX;
+      clientY = e.clientY;
+    }
+
+    setStartPosition({ x: clientX, y: clientY });
+    setIsDragging(true);
+  };
+
+  const handleDragMove = (e: React.MouseEvent | React.TouchEvent) => {
+    if (!isDragging || !startPosition) return;
+
+    e.preventDefault(); // Prevent touch scrolling
+
+    let clientX: number, clientY: number;
+
+    if ("touches" in e) {
+      const touch = e.touches[0];
+      clientX = touch.clientX;
+      clientY = touch.clientY;
+    } else {
+      clientX = e.clientX;
+      clientY = e.clientY;
+    }
+
+    const deltaX = clientX - startPosition.x;
+    const deltaY = clientY - startPosition.y;
+
+    setPanPosition((prev) => ({
+      x: prev.x + deltaX,
+      y: prev.y + deltaY,
+    }));
+
+    setStartPosition({ x: clientX, y: clientY });
+  };
+
+  const handleDragEnd = () => {
+    setIsDragging(false);
+    setStartPosition(null);
+  };
+
   const zoomIn = () => setZoomLevel((prev) => Math.min(prev + 0.1, 3));
   const zoomOut = () => setZoomLevel((prev) => Math.max(prev - 0.1, 1));
   const resetZoom = () => {
@@ -79,17 +132,15 @@ const FullScreenLayout: React.FC<MapComponentProps> = ({
       {/* Map Container */}
       <div
         ref={mapContainerRef}
-        className={`relative w-full ${
-          isLargeScreen ? "aspect-[2/1]" : "aspect-[16/9]"
-        } mb-4 border-2 border-pink-200 rounded-lg overflow-hidden bg-white shadow-md`}
+        className="relative w-full aspect-[2/1] mb-4 border-2 border-pink-200 rounded-lg overflow-hidden bg-white shadow-md"
         style={{ cursor: isDragging ? "grabbing" : "grab" }}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
+        onMouseDown={handleDragStart}
+        onMouseMove={handleDragMove}
+        onMouseUp={handleDragEnd}
+        onMouseLeave={handleDragEnd}
+        onTouchStart={handleDragStart}
+        onTouchMove={handleDragMove}
+        onTouchEnd={handleDragEnd}
       >
         <div
           className="absolute inset-0 transition-transform duration-100 ease-out"
@@ -226,15 +277,16 @@ const FullScreenLayout: React.FC<MapComponentProps> = ({
             <DialogContent className="max-w-4xl">
               <DialogTitle>Hall Seating Layout</DialogTitle>
               <div
-                className="relative w-full aspect-[2/1] overflow-hidden"
+                ref={mapContainerRef}
+                className="relative w-full aspect-[2/1] mb-4 border-2 border-pink-200 rounded-lg overflow-hidden bg-white shadow-md"
                 style={{ cursor: isDragging ? "grabbing" : "grab" }}
-                onMouseDown={handleMouseDown}
-                onMouseMove={handleMouseMove}
-                onMouseUp={handleMouseUp}
-                onMouseLeave={handleMouseUp}
-                onTouchStart={handleTouchStart}
-                onTouchMove={handleTouchMove}
-                onTouchEnd={handleTouchEnd}
+                onMouseDown={handleDragStart}
+                onMouseMove={handleDragMove}
+                onMouseUp={handleDragEnd}
+                onMouseLeave={handleDragEnd}
+                onTouchStart={handleDragStart}
+                onTouchMove={handleDragMove}
+                onTouchEnd={handleDragEnd}
               >
                 <div
                   className="absolute inset-0 transition-transform duration-100 ease-out"
