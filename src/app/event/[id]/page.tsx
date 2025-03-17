@@ -80,6 +80,46 @@ export default function EventSeatingPage() {
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const mapContainerRef = useRef<HTMLDivElement>(null);
 
+  const [errors, setErrors] = useState({
+    name: "",
+    phone_number: "",
+    member_count: "",
+    table_id: "",
+  });
+
+  const validateForm = () => {
+    let valid = true;
+    const newErrors = {
+      name: "",
+      phone_number: "",
+      member_count: "",
+      table_id: "",
+    };
+
+    if (!registrationData.name || registrationData.name.length < 3) {
+      newErrors.name = "Name must be at least 3 characters long.";
+      valid = false;
+    }
+
+    if (!/^\d{10}$/.test(registrationData.phone_number)) {
+      newErrors.phone_number = "Enter a valid 10-digit phone number.";
+      valid = false;
+    }
+
+    if (!registrationData.member_count || registrationData.member_count < 1) {
+      newErrors.member_count = "Must have at least 1 member.";
+      valid = false;
+    }
+
+    if (!registrationData.table_id) {
+      newErrors.table_id = "Please select a table.";
+      valid = false;
+    }
+
+    setErrors(newErrors);
+    return valid;
+  };
+
   // Fetch event data on load
   useEffect(() => {
     const fetchEventData = async () => {
@@ -181,12 +221,7 @@ export default function EventSeatingPage() {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (
-      !registrationData.name ||
-      !registrationData.phone_number ||
-      !registrationData.table_id
-    )
-      return;
+    if (!validateForm()) return;
 
     setIsRegistering(true);
     try {
@@ -346,23 +381,10 @@ export default function EventSeatingPage() {
                           #{selectedTable?.table_no}
                         </Badge>
                       </p>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6 rounded-full"
-                          >
-                            <Info className="h-4 w-4 text-muted-foreground" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>
-                            With {selectedGuest.member_count} seat
-                            {selectedGuest.member_count !== 1 ? "s" : ""}
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
+                      <div className="text-gray-700">
+                        with {selectedGuest.member_count} seat
+                        {selectedGuest.member_count !== 1 ? "s" : ""}
+                      </div>
                     </div>
                   </div>
                   {/* Hall layout with zoom functionality */}
@@ -470,6 +492,11 @@ export default function EventSeatingPage() {
                                 required
                                 className="border-pink-200 focus-visible:ring-pink-400"
                               />
+                              {errors.name && (
+                                <p className="text-red-500 text-xs">
+                                  {errors.name}
+                                </p>
+                              )}
                             </div>
 
                             <div className="space-y-2">
@@ -489,6 +516,11 @@ export default function EventSeatingPage() {
                                 required
                                 className="border-pink-200 focus-visible:ring-pink-400"
                               />
+                              {errors.phone_number && (
+                                <p className="text-red-500 text-xs">
+                                  {errors.phone_number}
+                                </p>
+                              )}
                             </div>
 
                             <div className="space-y-2">
@@ -506,13 +538,17 @@ export default function EventSeatingPage() {
                                 onChange={(e) =>
                                   setRegistrationData({
                                     ...registrationData,
-                                    member_count:
-                                      Number.parseInt(e.target.value) || 1,
+                                    member_count: Number(e.target.value) || 1,
                                   })
                                 }
                                 required
                                 className="border-pink-200 focus-visible:ring-pink-400"
                               />
+                              {errors.member_count && (
+                                <p className="text-red-500 text-xs">
+                                  {errors.member_count}
+                                </p>
+                              )}
                             </div>
 
                             <div className="space-y-2">
@@ -570,6 +606,11 @@ export default function EventSeatingPage() {
                                   </Tooltip>
                                 ))}
                               </div>
+                              {errors.table_id && (
+                                <p className="text-red-500 text-xs">
+                                  {errors.table_id}
+                                </p>
+                              )}
                             </div>
 
                             <Button

@@ -12,6 +12,7 @@ interface Guest {
   table_id: number;
   name: string;
   member_count: number;
+  table_no: string;
   phone_number: string;
   checked_at: string | null;
   avatar_url?: string; // Optional avatar URL
@@ -49,7 +50,6 @@ const SearchComponent: React.FC<SearchComponentProps> = ({
         );
         if (!response.ok) throw new Error("Search failed");
         const data = await response.json();
-
         // Add avatar URL to each guest
         const guestsWithAvatars = data.map((guest: Guest) => ({
           ...guest,
@@ -129,7 +129,7 @@ const SearchComponent: React.FC<SearchComponentProps> = ({
                       variant="outline"
                       className="text-pink-600 border-pink-200"
                     >
-                      Table #{guest.table_id}
+                      Table #{guest.table_no}
                     </Badge>
                   </div>
                 </div>

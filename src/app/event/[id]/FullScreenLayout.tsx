@@ -28,6 +28,9 @@ const FullScreenLayout: React.FC<MapComponentProps> = ({
   const [panPosition, setPanPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const mapContainerRef = useRef<HTMLDivElement>(null);
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const toggleExpand = () => setIsExpanded((prev) => !prev);
 
   const [startPosition, setStartPosition] = useState<{
     x: number;
@@ -89,38 +92,6 @@ const FullScreenLayout: React.FC<MapComponentProps> = ({
     setPanPosition({ x: 0, y: 0 });
   };
 
-  const handleMouseDown = (e: React.MouseEvent) => {
-    setIsDragging(true);
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (isDragging) {
-      const deltaX = e.movementX;
-      const deltaY = e.movementY;
-      setPanPosition((prev) => ({
-        x: prev.x + deltaX,
-        y: prev.y + deltaY,
-      }));
-    }
-  };
-
-  const handleMouseUp = () => setIsDragging(false);
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    setIsDragging(true);
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (isDragging) {
-      const touch = e.touches[0];
-      const deltaX = touch.clientX - panPosition.x;
-      const deltaY = touch.clientY - panPosition.y;
-      setPanPosition({ x: touch.clientX, y: touch.clientY });
-    }
-  };
-
-  const handleTouchEnd = () => setIsDragging(false);
-
   const isLargeScreen = window.innerWidth > 1024;
 
   if (!event) {
@@ -173,8 +144,8 @@ const FullScreenLayout: React.FC<MapComponentProps> = ({
                     <div
                       className={`flex flex-col items-center ${
                         table.table_no === selectedGuest?.table_id
-                          ? "scale-50"
-                          : "scale-60"
+                          ? "scale-60"
+                          : "scale-70"
                       }`}
                     >
                       <Pin
@@ -195,7 +166,11 @@ const FullScreenLayout: React.FC<MapComponentProps> = ({
                 }
               `}
                       >
-                        Table #{table.table_no}
+                        <span
+                          className={isExpanded ? "text-[12px]" : "text-[8px]"}
+                        >
+                          Table #{table.table_no}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -257,7 +232,7 @@ const FullScreenLayout: React.FC<MapComponentProps> = ({
           </Tooltip>
 
           {/* Expand Icon */}
-          <Dialog>
+          <Dialog open={isExpanded} onOpenChange={setIsExpanded}>
             <Tooltip>
               <TooltipTrigger asChild>
                 <DialogTrigger asChild>
@@ -265,13 +240,14 @@ const FullScreenLayout: React.FC<MapComponentProps> = ({
                     variant="outline"
                     size="icon"
                     className="h-8 w-8 rounded-full bg-white border-pink-200 text-pink-600 hover:bg-pink-50"
+                    onClick={() => toggleExpand}
                   >
                     <Expand className="h-4 w-4" />
                   </Button>
                 </DialogTrigger>
               </TooltipTrigger>
               <TooltipContent side="left">
-                <p>Expand</p>
+                <p>{isExpanded ? "Close" : "Expand"}</p>
               </TooltipContent>
             </Tooltip>
             <DialogContent className="max-w-4xl">
@@ -321,8 +297,8 @@ const FullScreenLayout: React.FC<MapComponentProps> = ({
                             <div
                               className={`flex flex-col items-center ${
                                 table.table_no === selectedTable?.table_no
-                                  ? "scale-50"
-                                  : "scale-60"
+                                  ? "scale-60"
+                                  : "scale-70"
                               }`}
                             >
                               <Pin
@@ -343,7 +319,13 @@ const FullScreenLayout: React.FC<MapComponentProps> = ({
                                   }
                                 `}
                               >
-                                Table #{table.table_no}
+                                <span
+                                  className={
+                                    isExpanded ? "text-[12px]" : "text-[8px]"
+                                  }
+                                >
+                                  Table #{table.table_no}
+                                </span>
                               </div>
                             </div>
                           </div>
